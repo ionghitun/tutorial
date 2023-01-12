@@ -1,0 +1,87 @@
+version: '3.9'
+services:
+    tutorial-nginx:
+        container_name: tutorial-nginx
+        restart: unless-stopped
+        build:
+            context: ./
+            dockerfile: docker/nginx/Dockerfile
+        volumes:
+            - ./:/var/www
+            - ./docker/nginx/${VHOST_FILE}:/etc/nginx/conf.d/custom.conf
+        ports:
+            - "80"
+        links:
+            - tutorial-php
+        environment:
+            VIRTUAL_HOST: ${DOMAIN_HOST}
+            VIRTUAL_PORT: 80
+            LETSENCRYPT_HOST: ${DOMAIN_HOST}
+            LETSENCRYPT_EMAIL: ${DOMAIN_EMAIL}
+        networks:
+            - nginx-proxy
+            - tutorial
+
+    tutorial-php:
+        container_name: tutorial-php
+        restart: unless-stopped
+        user: ${USER_ID}:${GROUP_ID}
+        build:
+            context: ./
+            dockerfile: docker/php/Dockerfile
+            args:
+                USER_ID: ${USER_ID}
+                GROUP_ID: ${GROUP_ID}
+        volumes:
+            - ./:/var/www
+            - ./docker/php/php.ini:/usr/local/etc/php/conf.d/php.ini
+            - ./docker/php/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+            - ./docker/php/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf
+        links:
+            - tutorial-mysql
+            - tutorial-redis
+        ports:
+            - "9001:9001"
+        tmpfs:
+            - /dev/shm
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+        networks:
+            - tutorial
+
+    tutorial-mysql:
+        container_name: tutorial-mysql
+        restart: unless-stopped
+        image: mysql:8.0.31
+        volumes:
+            - ./docker/mysql/myconf.conf:/etc/mysql/conf.d/myconf.conf
+        command: --default-authentication-plugin=mysql_native_password
+        environment:
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+            MYSQL_USER: ${DB_USERNAME}
+            MYSQL_PASSWORD: ${DB_PASSWORD}
+            MYSQL_DATABASE: ${DB_DATABASE}
+        ports:
+            - ${MYSQL_EXTERNAL_PORT}:3306
+        networks:
+            - tutorial
+
+    tutorial-redis:
+        container_name: tutorial-redis
+        restart: unless-stopped
+        build:
+            context: ./
+            dockerfile: docker/redis/Dockerfile
+            args:
+                REDIS_PASSWORD: ${REDIS_PASSWORD}
+        ports:
+            - ${REDIS_EXTERNAL_PORT}:6379
+        sysctls:
+            - net.core.somaxconn=511
+        networks:
+            - tutorial
+
+networks:
+    tutorial:
+    nginx-proxy:
+        external: true
