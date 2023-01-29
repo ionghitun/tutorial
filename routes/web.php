@@ -14,18 +14,24 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get('/', static function () {
+    return redirect(app()->getLocale());
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::group(['prefix' => '{locale}', 'middleware' => 'set.locale'], static function () {
+    Route::get('/', static function () {
+        return view('welcome');
+    });
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/dashboard', static function () {
+        return view('dashboard');
+    })->middleware(['auth', 'verified'])->name('dashboard');
+
+    Route::middleware('auth')->group(static function () {
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    });
+
+    require __DIR__.'/auth.php';
 });
-
-require __DIR__.'/auth.php';

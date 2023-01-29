@@ -27,12 +27,16 @@
                     @auth
                         <a href="{{ url('/dashboard') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">Dashboard</a>
                     @else
-                        <a href="{{ route('login') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">Log in</a>
+                        <a href="{{ route('login') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">{{__('Log in')}}</a>
 
                         @if (Route::has('register'))
-                            <a href="{{ route('register') }}" class="ml-4 text-sm text-gray-700 dark:text-gray-500 underline">Register</a>
+                            <a href="{{ route('register') }}" class="ml-4 text-sm text-gray-700 dark:text-gray-500 underline">{{__('Register')}}</a>
                         @endif
                     @endauth
+
+                        @foreach(config('app.available_locales') as $language => $locale)
+                            <a href="{{ url($locale) }}" class="ml-4 text-sm text-gray-700 dark:text-gray-500 underline">{{$language}}</a>
+                        @endforeach
                 </div>
             @endif
 
