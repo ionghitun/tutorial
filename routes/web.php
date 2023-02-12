@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TestController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+Route::get('/test', [TestController::class, 'index']);
 
 Route::get('/', static function () {
     return redirect(app()->getLocale());
@@ -33,5 +36,5 @@ Route::group(['prefix' => '{locale}', 'middleware' => 'set.locale'], static func
         Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     });
 
-    require __DIR__.'/auth.php';
+    require __DIR__ . '/auth.php';
 });

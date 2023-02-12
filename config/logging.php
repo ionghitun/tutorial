@@ -1,5 +1,6 @@
 <?php
 
+use Monolog\Formatter\JsonFormatter;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -53,7 +54,7 @@ return [
     'channels' => [
         'stack' => [
             'driver' => 'stack',
-            'channels' => ['single'],
+            'channels' => ['daily_error', 'daily_debug'],
             'ignore_exceptions' => false,
         ],
 
@@ -85,7 +86,7 @@ return [
             'handler_with' => [
                 'host' => env('PAPERTRAIL_URL'),
                 'port' => env('PAPERTRAIL_PORT'),
-                'connectionString' => 'tls://'.env('PAPERTRAIL_URL').':'.env('PAPERTRAIL_PORT'),
+                'connectionString' => 'tls://' . env('PAPERTRAIL_URL') . ':' . env('PAPERTRAIL_PORT'),
             ],
         ],
 
@@ -117,6 +118,24 @@ return [
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
         ],
+
+        'daily_error' => [
+            'driver' => 'daily',
+            'formatter' => JsonFormatter::class,
+            'path' => storage_path('logs/error.log'),
+            'level' => 'error',
+            'days' => 14,
+            'bubble' => false
+        ],
+
+        'daily_debug' => [
+            'driver' => 'daily',
+            'formatter' => JsonFormatter::class,
+            'path' => storage_path('logs/debug.log'),
+            'level' => 'debug',
+            'days' => 14,
+            'bubble' => false
+        ]
     ],
 
 ];
