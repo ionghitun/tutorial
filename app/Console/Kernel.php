@@ -18,6 +18,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('inspire')->daily();
 
         $schedule->command('horizon:snapshot')->everyFiveMinutes();
+
+        $schedule->command('cache:prune-stale-tags')->hourly();
     }
 
     /**
